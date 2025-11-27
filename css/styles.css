@@ -16,19 +16,24 @@
     --color-text-secondary: rgba(255, 255, 255, 0.7);
     --color-text-tertiary: rgba(255, 255, 255, 0.5);
 
-    --color-accent-cyan: #00F0FF;
-    --color-accent-purple: #8B5CF6;
-    --color-accent-pink: #EC4899;
-    --color-accent-blue: #3B82F6;
+    /* New Color Palette - Quantum Teal & Amber (based on Pantone trends 2022-2025) */
+    --color-accent-primary: #0EA5E9;    /* Sky Blue - primary quantum energy */
+    --color-accent-secondary: #06B6D4;  /* Cyan - quantum computing */
+    --color-accent-tertiary: #F59E0B;   /* Amber - warm accent, inspired by Peach Fuzz 2024 */
+    --color-accent-highlight: #14B8A6;  /* Teal - technology & innovation */
 
-    /* Logo colors - purple gradient for better visibility in both themes */
-    --color-logo-start: #8B5CF6;
-    --color-logo-end: #6366F1;
+    /* Legacy color names for compatibility */
+    --color-accent-cyan: #0EA5E9;
+    --color-accent-blue: #0284C7;
 
-    --gradient-primary: linear-gradient(135deg, var(--color-accent-cyan) 0%, var(--color-accent-purple) 100%);
-    --gradient-secondary: linear-gradient(135deg, var(--color-accent-purple) 0%, var(--color-accent-pink) 100%);
+    /* Logo colors - Quantum Blue gradient for visibility in both themes */
+    --color-logo-start: #0EA5E9;
+    --color-logo-end: #0284C7;
+
+    --gradient-primary: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-secondary) 100%);
+    --gradient-secondary: linear-gradient(135deg, var(--color-accent-secondary) 0%, var(--color-accent-highlight) 100%);
     --gradient-logo: linear-gradient(135deg, var(--color-logo-start) 0%, var(--color-logo-end) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, rgba(0, 240, 255, 0.15) 0%, transparent 70%);
+    --gradient-glow: radial-gradient(ellipse at center, rgba(14, 165, 233, 0.15) 0%, transparent 70%);
 
     /* Border colors */
     --color-border: rgba(255, 255, 255, 0.05);
@@ -66,9 +71,13 @@
     --transition-slower: 500ms ease;
 
     /* Shadows */
-    --shadow-glow-cyan: 0 0 40px rgba(0, 240, 255, 0.3);
-    --shadow-glow-purple: 0 0 40px rgba(139, 92, 246, 0.3);
+    --shadow-glow-primary: 0 0 40px rgba(14, 165, 233, 0.3);
+    --shadow-glow-secondary: 0 0 40px rgba(6, 182, 212, 0.3);
     --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.2);
+
+    /* Legacy shadow names for compatibility */
+    --shadow-glow-cyan: var(--shadow-glow-primary);
+    --shadow-glow-purple: var(--shadow-glow-secondary);
 
     /* Layout */
     --container-max: 1280px;
@@ -1401,11 +1410,11 @@ ul {
     --color-text-secondary: rgba(15, 23, 42, 0.7);
     --color-text-tertiary: rgba(15, 23, 42, 0.5);
 
-    /* Logo colors remain same for visibility */
-    --color-logo-start: #8B5CF6;
-    --color-logo-end: #6366F1;
+    /* Logo colors - darker blue for light theme visibility */
+    --color-logo-start: #0284C7;
+    --color-logo-end: #0369A1;
 
-    --gradient-glow: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+    --gradient-glow: radial-gradient(ellipse at center, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
 
     /* Border colors */
     --color-border: rgba(0, 0, 0, 0.08);
@@ -1458,7 +1467,7 @@ ul {
 [data-theme="light"] .features::before,
 [data-theme="light"] .agents::before,
 [data-theme="light"] .cta::before {
-    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.2), transparent);
 }
 
 [data-theme="light"] .feature-card,
@@ -1469,21 +1478,21 @@ ul {
 }
 
 [data-theme="light"] .feature-card:hover {
-    border-color: rgba(139, 92, 246, 0.3);
-    box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
+    border-color: rgba(14, 165, 233, 0.3);
+    box-shadow: 0 0 40px rgba(14, 165, 233, 0.15);
 }
 
 [data-theme="light"] .feature-card::before {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
 }
 
 [data-theme="light"] .tech-item:hover {
-    border-color: rgba(139, 92, 246, 0.3);
+    border-color: rgba(14, 165, 233, 0.3);
 }
 
 [data-theme="light"] .agent-card:hover {
-    border-color: rgba(139, 92, 246, 0.3);
-    box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
+    border-color: rgba(14, 165, 233, 0.3);
+    box-shadow: 0 0 40px rgba(14, 165, 233, 0.15);
 }
 
 [data-theme="light"] .agent-stats {
@@ -1503,13 +1512,13 @@ ul {
 }
 
 [data-theme="light"] .quantum-spinner::before {
-    border-top-color: var(--color-accent-purple);
-    border-bottom-color: var(--color-accent-pink);
+    border-top-color: var(--color-accent-primary);
+    border-bottom-color: var(--color-accent-secondary);
 }
 
 [data-theme="light"] .quantum-spinner::after {
-    border-left-color: var(--color-accent-purple);
-    border-right-color: var(--color-accent-pink);
+    border-left-color: var(--color-accent-primary);
+    border-right-color: var(--color-accent-secondary);
 }
 
 /* ==========================================
