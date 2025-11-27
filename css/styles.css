@@ -42,9 +42,9 @@
     /* Navbar scrolled background */
     --navbar-bg-scrolled: rgba(10, 10, 15, 0.9);
 
-    /* Typography */
-    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-display: 'Space Grotesk', var(--font-primary);
+    /* Typography - American Tech Product Stack */
+    --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 
     /* Spacing */
     --spacing-xs: 0.25rem;
@@ -524,9 +524,9 @@ ul {
 .hero-title {
     font-family: var(--font-display);
     font-size: clamp(2.5rem, 8vw, 5rem);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.1;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
     margin-bottom: var(--spacing-xl);
     animation: fadeInUp 0.6s ease 0.1s forwards;
     opacity: 0;
@@ -691,9 +691,9 @@ ul {
 .section-title {
     font-family: var(--font-display);
     font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.2;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
     margin-bottom: var(--spacing-lg);
 }
 
