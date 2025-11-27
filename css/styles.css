@@ -383,12 +383,13 @@ ul {
 }
 
 .btn-primary {
-    background: var(--gradient-primary);
+    background: var(--color-accent-cyan);
     color: var(--color-bg-primary);
     box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
 }
 
 .btn-primary:hover {
+    background: #00d4e0;
     box-shadow: 0 6px 30px rgba(0, 240, 255, 0.4);
     transform: translateY(-2px);
 }
