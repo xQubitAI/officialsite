@@ -1,7 +1,38 @@
 /**
  * xQubit.AI - Three.js 3D Scenes
  * Quantum Computing and AI Agent visualizations
+ * Theme-aware colors for dark/light mode support
  */
+
+// Theme color management
+const ThemeColors = {
+    dark: {
+        primary: 0x0EA5E9,      // Sky Blue
+        secondary: 0x06B6D4,    // Cyan
+        highlight: 0x14B8A6,    // Teal
+        background: 0x1a1a25,
+        particleOpacity: 0.8,
+        lineOpacity: 0.3,
+        glowOpacity: 0.9
+    },
+    light: {
+        primary: 0x0284C7,      // Darker Sky Blue for light bg
+        secondary: 0x0891B2,    // Darker Cyan
+        highlight: 0x0D9488,    // Darker Teal
+        background: 0xf0f2f5,
+        particleOpacity: 0.9,
+        lineOpacity: 0.4,
+        glowOpacity: 0.7
+    }
+};
+
+function getCurrentTheme() {
+    return document.documentElement.getAttribute('data-theme') || 'dark';
+}
+
+function getThemeColors() {
+    return ThemeColors[getCurrentTheme()];
+}
 
 // ==========================================
 // Hero Section - Quantum Particle System
@@ -26,6 +57,7 @@ class QuantumHeroScene {
         // Setup renderer
         this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setClearColor(0x000000, 0); // Transparent background
         this.container.appendChild(this.renderer.domElement);
 
         // Camera position
@@ -41,15 +73,60 @@ class QuantumHeroScene {
         window.addEventListener('resize', () => this.onResize());
         window.addEventListener('mousemove', (e) => this.onMouseMove(e));
 
+        // Listen for theme changes
+        this.setupThemeObserver();
+
         // Start animation
         this.animate();
     }
 
+    setupThemeObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'data-theme') {
+                    this.updateColors();
+                }
+            });
+        });
+        observer.observe(document.documentElement, { attributes: true });
+    }
+
+    updateColors() {
+        const colors = getThemeColors();
+
+        if (this.core) {
+            this.core.material.color.setHex(colors.primary);
+        }
+        if (this.innerCore) {
+            this.innerCore.material.color.setHex(colors.secondary);
+        }
+        if (this.glowSphere) {
+            this.glowSphere.material.color.setHex(colors.primary);
+            this.glowSphere.material.opacity = colors.glowOpacity;
+        }
+        if (this.particleSystem) {
+            this.particleSystem.material.opacity = colors.particleOpacity;
+        }
+
+        // Update orbital rings
+        this.quantumOrbitals.forEach((orbital, i) => {
+            const ringColors = [colors.primary, colors.secondary, colors.highlight];
+            orbital.mesh.material.color.setHex(ringColors[i % 3]);
+        });
+
+        // Update entanglement lines
+        this.entanglementLines.forEach(line => {
+            line.mesh.material.color.setHex(Math.random() > 0.5 ? colors.primary : colors.secondary);
+        });
+    }
+
     createQuantumCore() {
+        const colors = getThemeColors();
+
         // Central quantum core with glow
         const coreGeometry = new THREE.IcosahedronGeometry(2, 2);
         const coreMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00F0FF,
+            color: colors.primary,
             wireframe: true,
             transparent: true,
             opacity: 0.8
@@ -60,7 +137,7 @@ class QuantumHeroScene {
         // Inner core
         const innerGeometry = new THREE.IcosahedronGeometry(1, 1);
         const innerMaterial = new THREE.MeshBasicMaterial({
-            color: 0x8B5CF6,
+            color: colors.secondary,
             wireframe: true,
             transparent: true,
             opacity: 0.6
@@ -71,22 +148,23 @@ class QuantumHeroScene {
         // Glowing sphere
         const glowGeometry = new THREE.SphereGeometry(0.5, 32, 32);
         const glowMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00F0FF,
+            color: colors.primary,
             transparent: true,
-            opacity: 0.9
+            opacity: colors.glowOpacity
         });
         this.glowSphere = new THREE.Mesh(glowGeometry, glowMaterial);
         this.scene.add(this.glowSphere);
     }
 
     createParticles() {
+        const colors = getThemeColors();
         const particleCount = 500;
         const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
+        const particleColors = new Float32Array(particleCount * 3);
         const sizes = new Float32Array(particleCount);
 
-        const colorCyan = new THREE.Color(0x00F0FF);
-        const colorPurple = new THREE.Color(0x8B5CF6);
+        const colorPrimary = new THREE.Color(colors.primary);
+        const colorSecondary = new THREE.Color(colors.secondary);
 
         for (let i = 0; i < particleCount; i++) {
             // Spherical distribution
@@ -100,10 +178,10 @@ class QuantumHeroScene {
 
             // Color interpolation
             const mixRatio = Math.random();
-            const color = colorCyan.clone().lerp(colorPurple, mixRatio);
-            colors[i * 3] = color.r;
-            colors[i * 3 + 1] = color.g;
-            colors[i * 3 + 2] = color.b;
+            const color = colorPrimary.clone().lerp(colorSecondary, mixRatio);
+            particleColors[i * 3] = color.r;
+            particleColors[i * 3 + 1] = color.g;
+            particleColors[i * 3 + 2] = color.b;
 
             sizes[i] = Math.random() * 2 + 0.5;
 
@@ -120,14 +198,14 @@ class QuantumHeroScene {
 
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
         geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
         const material = new THREE.PointsMaterial({
             size: 0.15,
             vertexColors: true,
             transparent: true,
-            opacity: 0.8,
+            opacity: colors.particleOpacity,
             blending: THREE.AdditiveBlending,
             depthWrite: false
         });
@@ -137,8 +215,9 @@ class QuantumHeroScene {
     }
 
     createOrbitalRings() {
+        const colors = getThemeColors();
         const ringCount = 3;
-        const ringColors = [0x00F0FF, 0x8B5CF6, 0xEC4899];
+        const ringColors = [colors.primary, colors.secondary, colors.highlight];
 
         for (let i = 0; i < ringCount; i++) {
             const radius = 5 + i * 3;
@@ -167,6 +246,7 @@ class QuantumHeroScene {
     }
 
     createEntanglementLines() {
+        const colors = getThemeColors();
         // Create lines representing quantum entanglement
         const lineCount = 20;
         this.entanglementLines = [];
@@ -189,7 +269,7 @@ class QuantumHeroScene {
 
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
             const material = new THREE.LineBasicMaterial({
-                color: Math.random() > 0.5 ? 0x00F0FF : 0x8B5CF6,
+                color: Math.random() > 0.5 ? colors.primary : colors.secondary,
                 transparent: true,
                 opacity: 0.2
             });
@@ -298,6 +378,7 @@ class QuantumProcessorScene {
     init() {
         this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setClearColor(0x000000, 0);
         this.container.appendChild(this.renderer.domElement);
 
         this.camera.position.set(0, 15, 25);
@@ -308,21 +389,54 @@ class QuantumProcessorScene {
         this.createConnections();
 
         window.addEventListener('resize', () => this.onResize());
+        this.setupThemeObserver();
         this.animate();
     }
 
+    setupThemeObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'data-theme') {
+                    this.updateColors();
+                }
+            });
+        });
+        observer.observe(document.documentElement, { attributes: true });
+    }
+
+    updateColors() {
+        const colors = getThemeColors();
+        const theme = getCurrentTheme();
+
+        // Update grid
+        if (this.gridHelper) {
+            this.gridHelper.material.color.setHex(colors.primary);
+        }
+
+        // Update qubits
+        this.qubits.forEach(qubit => {
+            const qubitColor = Math.random() > 0.5 ? colors.primary : colors.secondary;
+            qubit.mesh.material.color.setHex(qubitColor);
+            qubit.ring.material.color.setHex(colors.primary);
+        });
+    }
+
     createQuantumGrid() {
+        const colors = getThemeColors();
+        const theme = getCurrentTheme();
         // Grid lines
         const gridSize = 20;
         const divisions = 20;
-        const gridHelper = new THREE.GridHelper(gridSize, divisions, 0x00F0FF, 0x1a1a25);
-        gridHelper.material.opacity = 0.3;
-        gridHelper.material.transparent = true;
-        this.scene.add(gridHelper);
+        const gridColor = theme === 'light' ? 0x0284C7 : colors.primary;
+        const bgColor = theme === 'light' ? 0xe5e7eb : 0x1a1a25;
+        this.gridHelper = new THREE.GridHelper(gridSize, divisions, gridColor, bgColor);
+        this.gridHelper.material.opacity = theme === 'light' ? 0.2 : 0.3;
+        this.gridHelper.material.transparent = true;
+        this.scene.add(this.gridHelper);
     }
 
     createQubits() {
-        const gridSize = 5;
+        const colors = getThemeColors();
         const spacing = 3;
 
         for (let x = -2; x <= 2; x++) {
@@ -330,7 +444,7 @@ class QuantumProcessorScene {
                 // Qubit sphere
                 const geometry = new THREE.SphereGeometry(0.3, 16, 16);
                 const material = new THREE.MeshBasicMaterial({
-                    color: Math.random() > 0.5 ? 0x00F0FF : 0x8B5CF6,
+                    color: Math.random() > 0.5 ? colors.primary : colors.secondary,
                     transparent: true,
                     opacity: 0.9
                 });
@@ -340,7 +454,7 @@ class QuantumProcessorScene {
                 // Ring around qubit
                 const ringGeometry = new THREE.TorusGeometry(0.5, 0.02, 8, 32);
                 const ringMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x00F0FF,
+                    color: colors.primary,
                     transparent: true,
                     opacity: 0.5
                 });
@@ -362,9 +476,10 @@ class QuantumProcessorScene {
     }
 
     createConnections() {
+        const colors = getThemeColors();
         // Create lines between adjacent qubits
         const lineMaterial = new THREE.LineBasicMaterial({
-            color: 0x00F0FF,
+            color: colors.primary,
             transparent: true,
             opacity: 0.3
         });
@@ -438,6 +553,7 @@ class NeuralNetworkScene {
     init() {
         this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setClearColor(0x000000, 0);
         this.container.appendChild(this.renderer.domElement);
 
         this.camera.position.z = 40;
@@ -445,10 +561,36 @@ class NeuralNetworkScene {
         this.createNeuralNetwork();
 
         window.addEventListener('resize', () => this.onResize());
+        this.setupThemeObserver();
         this.animate();
     }
 
+    setupThemeObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'data-theme') {
+                    this.updateColors();
+                }
+            });
+        });
+        observer.observe(document.documentElement, { attributes: true });
+    }
+
+    updateColors() {
+        const colors = getThemeColors();
+
+        this.nodes.forEach(node => {
+            const nodeColor = node.layer === 0 || node.layer === 4 ? colors.primary : colors.secondary;
+            node.mesh.material.color.setHex(nodeColor);
+        });
+
+        this.connections.forEach(connection => {
+            connection.mesh.material.color.setHex(colors.primary);
+        });
+    }
+
     createNeuralNetwork() {
+        const colors = getThemeColors();
         const layers = [4, 6, 8, 6, 4];
         const layerSpacing = 8;
         const nodeSpacing = 4;
@@ -461,7 +603,7 @@ class NeuralNetworkScene {
 
                 const geometry = new THREE.SphereGeometry(0.4, 16, 16);
                 const material = new THREE.MeshBasicMaterial({
-                    color: layerIndex === 0 || layerIndex === layers.length - 1 ? 0x00F0FF : 0x8B5CF6,
+                    color: layerIndex === 0 || layerIndex === layers.length - 1 ? colors.primary : colors.secondary,
                     transparent: true,
                     opacity: 0.8
                 });
@@ -490,7 +632,7 @@ class NeuralNetworkScene {
                         const points = [node.mesh.position, nextNode.mesh.position];
                         const geometry = new THREE.BufferGeometry().setFromPoints(points);
                         const material = new THREE.LineBasicMaterial({
-                            color: 0x00F0FF,
+                            color: colors.primary,
                             transparent: true,
                             opacity: 0.2
                         });
@@ -561,6 +703,7 @@ class FloatingParticlesScene {
     init() {
         this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setClearColor(0x000000, 0);
         this.container.appendChild(this.renderer.domElement);
 
         this.camera.position.z = 30;
@@ -568,37 +711,57 @@ class FloatingParticlesScene {
         this.createParticles();
 
         window.addEventListener('resize', () => this.onResize());
+        this.setupThemeObserver();
         this.animate();
     }
 
+    setupThemeObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'data-theme') {
+                    this.updateColors();
+                }
+            });
+        });
+        observer.observe(document.documentElement, { attributes: true });
+    }
+
+    updateColors() {
+        const colors = getThemeColors();
+        if (this.particles) {
+            this.particles.material.opacity = colors.particleOpacity;
+        }
+    }
+
     createParticles() {
+        const colors = getThemeColors();
         const particleCount = 200;
         const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
+        const particleColors = new Float32Array(particleCount * 3);
 
-        const colorCyan = new THREE.Color(0x00F0FF);
-        const colorPurple = new THREE.Color(0x8B5CF6);
+        const colorPrimary = new THREE.Color(colors.primary);
+        const colorSecondary = new THREE.Color(colors.secondary);
 
         for (let i = 0; i < particleCount; i++) {
             positions[i * 3] = (Math.random() - 0.5) * 60;
             positions[i * 3 + 1] = (Math.random() - 0.5) * 30;
             positions[i * 3 + 2] = (Math.random() - 0.5) * 30;
 
-            const color = colorCyan.clone().lerp(colorPurple, Math.random());
-            colors[i * 3] = color.r;
-            colors[i * 3 + 1] = color.g;
-            colors[i * 3 + 2] = color.b;
+            const color = colorPrimary.clone().lerp(colorSecondary, Math.random());
+            particleColors[i * 3] = color.r;
+            particleColors[i * 3 + 1] = color.g;
+            particleColors[i * 3 + 2] = color.b;
         }
 
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
 
         const material = new THREE.PointsMaterial({
             size: 0.3,
             vertexColors: true,
             transparent: true,
-            opacity: 0.6,
+            opacity: colors.particleOpacity,
             blending: THREE.AdditiveBlending
         });
 
@@ -646,6 +809,7 @@ class FeatureQuantumScene {
     init() {
         this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setClearColor(0x000000, 0);
         this.container.appendChild(this.renderer.domElement);
 
         this.camera.position.z = 10;
@@ -653,14 +817,45 @@ class FeatureQuantumScene {
         this.createScene();
 
         window.addEventListener('resize', () => this.onResize());
+        this.setupThemeObserver();
         this.animate();
     }
 
+    setupThemeObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'data-theme') {
+                    this.updateColors();
+                }
+            });
+        });
+        observer.observe(document.documentElement, { attributes: true });
+    }
+
+    updateColors() {
+        const colors = getThemeColors();
+
+        if (this.core) {
+            this.core.material.color.setHex(colors.primary);
+        }
+
+        this.orbits.forEach((orbit, i) => {
+            const orbitColor = i % 2 === 0 ? colors.primary : colors.secondary;
+            orbit.material.color.setHex(orbitColor);
+            // Update electron color
+            if (orbit.children[0]) {
+                orbit.children[0].material.color.setHex(orbitColor);
+            }
+        });
+    }
+
     createScene() {
+        const colors = getThemeColors();
+
         // Central atom
         const coreGeometry = new THREE.IcosahedronGeometry(1, 1);
         const coreMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00F0FF,
+            color: colors.primary,
             wireframe: true,
             transparent: true,
             opacity: 0.8
@@ -673,7 +868,7 @@ class FeatureQuantumScene {
         for (let i = 0; i < 3; i++) {
             const orbitGeometry = new THREE.TorusGeometry(2 + i * 0.8, 0.02, 8, 64);
             const orbitMaterial = new THREE.MeshBasicMaterial({
-                color: i % 2 === 0 ? 0x00F0FF : 0x8B5CF6,
+                color: i % 2 === 0 ? colors.primary : colors.secondary,
                 transparent: true,
                 opacity: 0.5
             });
@@ -686,7 +881,7 @@ class FeatureQuantumScene {
             // Electron
             const electronGeometry = new THREE.SphereGeometry(0.15, 16, 16);
             const electronMaterial = new THREE.MeshBasicMaterial({
-                color: i % 2 === 0 ? 0x00F0FF : 0x8B5CF6
+                color: i % 2 === 0 ? colors.primary : colors.secondary
             });
             const electron = new THREE.Mesh(electronGeometry, electronMaterial);
             orbit.add(electron);
