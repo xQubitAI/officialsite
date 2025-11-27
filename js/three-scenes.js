@@ -4,7 +4,7 @@
  * Theme-aware colors for dark/light mode support
  */
 
-// Theme color management
+// Theme color management - Minimalist Monochrome Design
 const ThemeColors = {
     dark: {
         primary: 0x0EA5E9,      // Sky Blue
@@ -16,13 +16,28 @@ const ThemeColors = {
         glowOpacity: 0.9
     },
     light: {
-        primary: 0x0284C7,      // Darker Sky Blue for light bg
-        secondary: 0x0891B2,    // Darker Cyan
-        highlight: 0x0D9488,    // Darker Teal
-        background: 0xf0f2f5,
-        particleOpacity: 0.9,
-        lineOpacity: 0.4,
-        glowOpacity: 0.7
+        // Monochrome depth-based color system for light theme
+        // Using deep blue as the single color family with varying shades
+        primary: 0x1e40af,      // Deep Blue - darkest (main elements)
+        secondary: 0x3b82f6,    // Medium Blue - mid-tone (secondary elements)
+        highlight: 0x60a5fa,    // Light Blue - brightest (accents)
+
+        // Depth levels for layered effects
+        depth1: 0x1e3a8a,       // Darkest - core elements
+        depth2: 0x2563eb,       // Dark - primary structures
+        depth3: 0x3b82f6,       // Medium - mid-layer elements
+        depth4: 0x60a5fa,       // Light - highlights
+        depth5: 0x93c5fd,       // Lightest - subtle accents
+
+        background: 0xfafbfd,
+        particleOpacity: 0.75,   // Slightly more subtle
+        lineOpacity: 0.35,       // Refined opacity
+        glowOpacity: 0.5,        // Softer glow
+
+        // Material properties for depth
+        wireframeOpacity: 0.6,
+        solidOpacity: 0.85,
+        emissiveIntensity: 0.15  // Subtle emissive glow
     }
 };
 
@@ -93,31 +108,69 @@ class QuantumHeroScene {
 
     updateColors() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
 
-        if (this.core) {
-            this.core.material.color.setHex(colors.primary);
-        }
-        if (this.innerCore) {
-            this.innerCore.material.color.setHex(colors.secondary);
-        }
-        if (this.glowSphere) {
-            this.glowSphere.material.color.setHex(colors.primary);
-            this.glowSphere.material.opacity = colors.glowOpacity;
-        }
-        if (this.particleSystem) {
-            this.particleSystem.material.opacity = colors.particleOpacity;
-        }
+        if (theme === 'light') {
+            // Monochrome depth-based coloring for light theme
+            if (this.core) {
+                this.core.material.color.setHex(colors.depth1); // Darkest for core
+                this.core.material.opacity = colors.wireframeOpacity;
+            }
+            if (this.innerCore) {
+                this.innerCore.material.color.setHex(colors.depth2); // Dark for inner
+                this.innerCore.material.opacity = colors.wireframeOpacity * 0.8;
+            }
+            if (this.glowSphere) {
+                this.glowSphere.material.color.setHex(colors.depth3); // Medium for glow
+                this.glowSphere.material.opacity = colors.glowOpacity;
+            }
+            if (this.particleSystem) {
+                this.particleSystem.material.opacity = colors.particleOpacity;
+            }
 
-        // Update orbital rings
-        this.quantumOrbitals.forEach((orbital, i) => {
-            const ringColors = [colors.primary, colors.secondary, colors.highlight];
-            orbital.mesh.material.color.setHex(ringColors[i % 3]);
-        });
+            // Gradient depth for orbital rings (darkest to lightest)
+            this.quantumOrbitals.forEach((orbital, i) => {
+                const depthColors = [colors.depth2, colors.depth3, colors.depth4];
+                orbital.mesh.material.color.setHex(depthColors[i % 3]);
+                orbital.mesh.material.opacity = 0.5 - (i * 0.1); // Decreasing opacity for depth
+            });
 
-        // Update entanglement lines
-        this.entanglementLines.forEach(line => {
-            line.mesh.material.color.setHex(Math.random() > 0.5 ? colors.primary : colors.secondary);
-        });
+            // Subtle entanglement lines
+            this.entanglementLines.forEach((line, i) => {
+                line.mesh.material.color.setHex(colors.depth4); // Light blue for all lines
+                line.mesh.material.opacity = colors.lineOpacity;
+            });
+        } else {
+            // Original dark theme colors
+            if (this.core) {
+                this.core.material.color.setHex(colors.primary);
+                this.core.material.opacity = 0.8;
+            }
+            if (this.innerCore) {
+                this.innerCore.material.color.setHex(colors.secondary);
+                this.innerCore.material.opacity = 0.6;
+            }
+            if (this.glowSphere) {
+                this.glowSphere.material.color.setHex(colors.primary);
+                this.glowSphere.material.opacity = colors.glowOpacity;
+            }
+            if (this.particleSystem) {
+                this.particleSystem.material.opacity = colors.particleOpacity;
+            }
+
+            // Update orbital rings
+            this.quantumOrbitals.forEach((orbital, i) => {
+                const ringColors = [colors.primary, colors.secondary, colors.highlight];
+                orbital.mesh.material.color.setHex(ringColors[i % 3]);
+                orbital.mesh.material.opacity = 0.4;
+            });
+
+            // Update entanglement lines
+            this.entanglementLines.forEach(line => {
+                line.mesh.material.color.setHex(Math.random() > 0.5 ? colors.primary : colors.secondary);
+                line.mesh.material.opacity = 0.2;
+            });
+        }
     }
 
     createQuantumCore() {
@@ -158,42 +211,81 @@ class QuantumHeroScene {
 
     createParticles() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
         const particleCount = 500;
         const positions = new Float32Array(particleCount * 3);
         const particleColors = new Float32Array(particleCount * 3);
         const sizes = new Float32Array(particleCount);
 
-        const colorPrimary = new THREE.Color(colors.primary);
-        const colorSecondary = new THREE.Color(colors.secondary);
+        if (theme === 'light') {
+            // Monochrome gradient particles for light theme
+            const colorDark = new THREE.Color(colors.depth2);   // Darker blue
+            const colorLight = new THREE.Color(colors.depth5);  // Lighter blue
 
-        for (let i = 0; i < particleCount; i++) {
-            // Spherical distribution
-            const radius = 8 + Math.random() * 20;
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
+            for (let i = 0; i < particleCount; i++) {
+                // Spherical distribution
+                const radius = 8 + Math.random() * 20;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
 
-            positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-            positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-            positions[i * 3 + 2] = radius * Math.cos(phi);
+                positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i * 3 + 2] = radius * Math.cos(phi);
 
-            // Color interpolation
-            const mixRatio = Math.random();
-            const color = colorPrimary.clone().lerp(colorSecondary, mixRatio);
-            particleColors[i * 3] = color.r;
-            particleColors[i * 3 + 1] = color.g;
-            particleColors[i * 3 + 2] = color.b;
+                // Depth-based color - closer particles are darker, farther are lighter
+                const depthRatio = (radius - 8) / 20; // 0 to 1
+                const color = colorDark.clone().lerp(colorLight, depthRatio);
+                particleColors[i * 3] = color.r;
+                particleColors[i * 3 + 1] = color.g;
+                particleColors[i * 3 + 2] = color.b;
 
-            sizes[i] = Math.random() * 2 + 0.5;
+                // Varying sizes for depth perception
+                sizes[i] = Math.random() * 2 + 0.5;
 
-            // Store particle data for animation
-            this.particles.push({
-                index: i,
-                radius: radius,
-                theta: theta,
-                phi: phi,
-                speed: 0.001 + Math.random() * 0.002,
-                phaseOffset: Math.random() * Math.PI * 2
-            });
+                // Store particle data for animation
+                this.particles.push({
+                    index: i,
+                    radius: radius,
+                    theta: theta,
+                    phi: phi,
+                    speed: 0.001 + Math.random() * 0.002,
+                    phaseOffset: Math.random() * Math.PI * 2
+                });
+            }
+        } else {
+            // Original dark theme particles
+            const colorPrimary = new THREE.Color(colors.primary);
+            const colorSecondary = new THREE.Color(colors.secondary);
+
+            for (let i = 0; i < particleCount; i++) {
+                // Spherical distribution
+                const radius = 8 + Math.random() * 20;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+
+                positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i * 3 + 2] = radius * Math.cos(phi);
+
+                // Color interpolation
+                const mixRatio = Math.random();
+                const color = colorPrimary.clone().lerp(colorSecondary, mixRatio);
+                particleColors[i * 3] = color.r;
+                particleColors[i * 3 + 1] = color.g;
+                particleColors[i * 3 + 2] = color.b;
+
+                sizes[i] = Math.random() * 2 + 0.5;
+
+                // Store particle data for animation
+                this.particles.push({
+                    index: i,
+                    radius: radius,
+                    theta: theta,
+                    phi: phi,
+                    speed: 0.001 + Math.random() * 0.002,
+                    phaseOffset: Math.random() * Math.PI * 2
+                });
+            }
         }
 
         const geometry = new THREE.BufferGeometry();
@@ -410,15 +502,34 @@ class QuantumProcessorScene {
 
         // Update grid
         if (this.gridHelper) {
-            this.gridHelper.material.color.setHex(colors.primary);
+            if (theme === 'light') {
+                this.gridHelper.material.color.setHex(colors.depth4); // Light blue for grid
+                this.gridHelper.material.opacity = 0.25;
+            } else {
+                this.gridHelper.material.color.setHex(colors.primary);
+                this.gridHelper.material.opacity = 0.3;
+            }
         }
 
-        // Update qubits
-        this.qubits.forEach(qubit => {
-            const qubitColor = Math.random() > 0.5 ? colors.primary : colors.secondary;
-            qubit.mesh.material.color.setHex(qubitColor);
-            qubit.ring.material.color.setHex(colors.primary);
-        });
+        // Update qubits with monochrome depth
+        if (theme === 'light') {
+            this.qubits.forEach((qubit, i) => {
+                // Alternate between depth levels for variety
+                const depthLevel = [colors.depth2, colors.depth3, colors.depth4][i % 3];
+                qubit.mesh.material.color.setHex(depthLevel);
+                qubit.mesh.material.opacity = colors.solidOpacity;
+                qubit.ring.material.color.setHex(depthLevel);
+                qubit.ring.material.opacity = 0.5;
+            });
+        } else {
+            this.qubits.forEach(qubit => {
+                const qubitColor = Math.random() > 0.5 ? colors.primary : colors.secondary;
+                qubit.mesh.material.color.setHex(qubitColor);
+                qubit.mesh.material.opacity = 0.9;
+                qubit.ring.material.color.setHex(colors.primary);
+                qubit.ring.material.opacity = 0.5;
+            });
+        }
     }
 
     createQuantumGrid() {
@@ -578,15 +689,42 @@ class NeuralNetworkScene {
 
     updateColors() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
 
-        this.nodes.forEach(node => {
-            const nodeColor = node.layer === 0 || node.layer === 4 ? colors.primary : colors.secondary;
-            node.mesh.material.color.setHex(nodeColor);
-        });
+        if (theme === 'light') {
+            // Monochrome depth gradient for neural network
+            this.nodes.forEach(node => {
+                // Layer-based depth: input/output layers darker, hidden layers lighter
+                let nodeColor;
+                if (node.layer === 0 || node.layer === 4) {
+                    nodeColor = colors.depth2; // Darker for input/output
+                } else if (node.layer === 2) {
+                    nodeColor = colors.depth4; // Lightest for middle layer
+                } else {
+                    nodeColor = colors.depth3; // Medium for other layers
+                }
+                node.mesh.material.color.setHex(nodeColor);
+                node.mesh.material.opacity = colors.solidOpacity;
+            });
 
-        this.connections.forEach(connection => {
-            connection.mesh.material.color.setHex(colors.primary);
-        });
+            // Subtle connections
+            this.connections.forEach(connection => {
+                connection.mesh.material.color.setHex(colors.depth5); // Lightest blue
+                connection.mesh.material.opacity = colors.lineOpacity * 0.6;
+            });
+        } else {
+            // Original dark theme
+            this.nodes.forEach(node => {
+                const nodeColor = node.layer === 0 || node.layer === 4 ? colors.primary : colors.secondary;
+                node.mesh.material.color.setHex(nodeColor);
+                node.mesh.material.opacity = 0.8;
+            });
+
+            this.connections.forEach(connection => {
+                connection.mesh.material.color.setHex(colors.primary);
+                connection.mesh.material.opacity = 0.2;
+            });
+        }
     }
 
     createNeuralNetwork() {
@@ -728,29 +866,54 @@ class FloatingParticlesScene {
 
     updateColors() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
+
         if (this.particles) {
-            this.particles.material.opacity = colors.particleOpacity;
+            if (theme === 'light') {
+                this.particles.material.opacity = colors.particleOpacity * 0.8; // Slightly more subtle
+            } else {
+                this.particles.material.opacity = colors.particleOpacity;
+            }
         }
     }
 
     createParticles() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
         const particleCount = 200;
         const positions = new Float32Array(particleCount * 3);
         const particleColors = new Float32Array(particleCount * 3);
 
-        const colorPrimary = new THREE.Color(colors.primary);
-        const colorSecondary = new THREE.Color(colors.secondary);
+        if (theme === 'light') {
+            // Monochrome gradient for light theme
+            const colorDark = new THREE.Color(colors.depth3);
+            const colorLight = new THREE.Color(colors.depth5);
 
-        for (let i = 0; i < particleCount; i++) {
-            positions[i * 3] = (Math.random() - 0.5) * 60;
-            positions[i * 3 + 1] = (Math.random() - 0.5) * 30;
-            positions[i * 3 + 2] = (Math.random() - 0.5) * 30;
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 60;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 30;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 30;
 
-            const color = colorPrimary.clone().lerp(colorSecondary, Math.random());
-            particleColors[i * 3] = color.r;
-            particleColors[i * 3 + 1] = color.g;
-            particleColors[i * 3 + 2] = color.b;
+                const color = colorDark.clone().lerp(colorLight, Math.random());
+                particleColors[i * 3] = color.r;
+                particleColors[i * 3 + 1] = color.g;
+                particleColors[i * 3 + 2] = color.b;
+            }
+        } else {
+            // Original dark theme
+            const colorPrimary = new THREE.Color(colors.primary);
+            const colorSecondary = new THREE.Color(colors.secondary);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 60;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 30;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 30;
+
+                const color = colorPrimary.clone().lerp(colorSecondary, Math.random());
+                particleColors[i * 3] = color.r;
+                particleColors[i * 3 + 1] = color.g;
+                particleColors[i * 3 + 2] = color.b;
+            }
         }
 
         const geometry = new THREE.BufferGeometry();
@@ -834,19 +997,46 @@ class FeatureQuantumScene {
 
     updateColors() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
 
-        if (this.core) {
-            this.core.material.color.setHex(colors.primary);
-        }
-
-        this.orbits.forEach((orbit, i) => {
-            const orbitColor = i % 2 === 0 ? colors.primary : colors.secondary;
-            orbit.material.color.setHex(orbitColor);
-            // Update electron color
-            if (orbit.children[0]) {
-                orbit.children[0].material.color.setHex(orbitColor);
+        if (theme === 'light') {
+            // Monochrome depth for feature quantum scene
+            if (this.core) {
+                this.core.material.color.setHex(colors.depth2);
+                this.core.material.opacity = colors.wireframeOpacity;
             }
-        });
+
+            this.orbits.forEach((orbit, i) => {
+                // Gradient from darker to lighter
+                const orbitColors = [colors.depth2, colors.depth3, colors.depth4];
+                const orbitColor = orbitColors[i % 3];
+                orbit.material.color.setHex(orbitColor);
+                orbit.material.opacity = 0.6;
+
+                // Update electron color
+                if (orbit.children[0]) {
+                    orbit.children[0].material.color.setHex(orbitColor);
+                    orbit.children[0].material.opacity = colors.solidOpacity;
+                }
+            });
+        } else {
+            // Original dark theme
+            if (this.core) {
+                this.core.material.color.setHex(colors.primary);
+                this.core.material.opacity = 0.8;
+            }
+
+            this.orbits.forEach((orbit, i) => {
+                const orbitColor = i % 2 === 0 ? colors.primary : colors.secondary;
+                orbit.material.color.setHex(orbitColor);
+                orbit.material.opacity = 0.5;
+
+                // Update electron color
+                if (orbit.children[0]) {
+                    orbit.children[0].material.color.setHex(orbitColor);
+                }
+            });
+        }
     }
 
     createScene() {
