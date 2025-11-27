@@ -4,7 +4,7 @@
  * Theme-aware colors for dark/light mode support
  */
 
-// Theme color management
+// Theme color management - Vibrant Scientific Palette
 const ThemeColors = {
     dark: {
         primary: 0x0EA5E9,      // Sky Blue
@@ -16,13 +16,25 @@ const ThemeColors = {
         glowOpacity: 0.9
     },
     light: {
-        primary: 0x0284C7,      // Darker Sky Blue for light bg
-        secondary: 0x0891B2,    // Darker Cyan
-        highlight: 0x0D9488,    // Darker Teal
-        background: 0xf0f2f5,
-        particleOpacity: 0.9,
-        lineOpacity: 0.4,
-        glowOpacity: 0.7
+        // Vibrant scientific colors for light theme - inspired by quantum phenomena
+        primary: 0xFF006E,      // Hot Magenta - quantum energy state
+        secondary: 0x00D9FF,    // Electric Cyan - quantum computing
+        highlight: 0xFFB700,    // Golden Amber - photonic energy
+        tertiary: 0x8B5CF6,     // Violet - quantum entanglement
+        quaternary: 0x10B981,   // Emerald - quantum coherence
+        accent: 0xFF5E5B,       // Coral - excited states
+
+        // Gradient array for multi-color effects
+        gradientColors: [0xFF006E, 0x00D9FF, 0xFFB700, 0x8B5CF6, 0x10B981],
+
+        background: 0xfafbfd,
+        particleOpacity: 0.95,
+        lineOpacity: 0.6,
+        glowOpacity: 1.0,
+
+        // Special effects
+        iridescent: true,
+        holographic: true
     }
 };
 
@@ -93,107 +105,225 @@ class QuantumHeroScene {
 
     updateColors() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
 
-        if (this.core) {
-            this.core.material.color.setHex(colors.primary);
-        }
-        if (this.innerCore) {
-            this.innerCore.material.color.setHex(colors.secondary);
-        }
-        if (this.glowSphere) {
-            this.glowSphere.material.color.setHex(colors.primary);
-            this.glowSphere.material.opacity = colors.glowOpacity;
-        }
-        if (this.particleSystem) {
-            this.particleSystem.material.opacity = colors.particleOpacity;
-        }
+        if (theme === 'light') {
+            // Vibrant multi-color scheme for light theme
+            if (this.core) {
+                this.core.material.color.setHex(colors.primary);
+                this.core.material.emissive = new THREE.Color(colors.primary);
+                this.core.material.emissiveIntensity = 0.5;
+            }
+            if (this.innerCore) {
+                this.innerCore.material.color.setHex(colors.secondary);
+                this.innerCore.material.emissive = new THREE.Color(colors.secondary);
+                this.innerCore.material.emissiveIntensity = 0.3;
+            }
+            if (this.glowSphere) {
+                // Animated gradient effect for glow sphere
+                this.glowSphere.material.color.setHex(colors.highlight);
+                this.glowSphere.material.opacity = colors.glowOpacity;
+            }
+            if (this.particleSystem) {
+                this.particleSystem.material.opacity = colors.particleOpacity;
+                this.particleSystem.material.size = 0.25; // Larger particles for light theme
+            }
 
-        // Update orbital rings
-        this.quantumOrbitals.forEach((orbital, i) => {
-            const ringColors = [colors.primary, colors.secondary, colors.highlight];
-            orbital.mesh.material.color.setHex(ringColors[i % 3]);
-        });
+            // Rainbow orbital rings
+            this.quantumOrbitals.forEach((orbital, i) => {
+                const ringColors = colors.gradientColors || [colors.primary, colors.secondary, colors.highlight];
+                orbital.mesh.material.color.setHex(ringColors[i % ringColors.length]);
+                orbital.mesh.material.emissive = new THREE.Color(ringColors[i % ringColors.length]);
+                orbital.mesh.material.emissiveIntensity = 0.2;
+                orbital.mesh.material.opacity = 0.8;
+            });
 
-        // Update entanglement lines
-        this.entanglementLines.forEach(line => {
-            line.mesh.material.color.setHex(Math.random() > 0.5 ? colors.primary : colors.secondary);
-        });
+            // Multi-colored entanglement lines
+            this.entanglementLines.forEach((line, i) => {
+                const lineColors = colors.gradientColors || [colors.primary, colors.secondary];
+                line.mesh.material.color.setHex(lineColors[i % lineColors.length]);
+                line.mesh.material.opacity = 0.5;
+            });
+        } else {
+            // Original dark theme colors
+            if (this.core) {
+                this.core.material.color.setHex(colors.primary);
+            }
+            if (this.innerCore) {
+                this.innerCore.material.color.setHex(colors.secondary);
+            }
+            if (this.glowSphere) {
+                this.glowSphere.material.color.setHex(colors.primary);
+                this.glowSphere.material.opacity = colors.glowOpacity;
+            }
+            if (this.particleSystem) {
+                this.particleSystem.material.opacity = colors.particleOpacity;
+            }
+
+            // Update orbital rings
+            this.quantumOrbitals.forEach((orbital, i) => {
+                const ringColors = [colors.primary, colors.secondary, colors.highlight];
+                orbital.mesh.material.color.setHex(ringColors[i % 3]);
+                orbital.mesh.material.opacity = 0.4;
+            });
+
+            // Update entanglement lines
+            this.entanglementLines.forEach(line => {
+                line.mesh.material.color.setHex(Math.random() > 0.5 ? colors.primary : colors.secondary);
+                line.mesh.material.opacity = 0.2;
+            });
+        }
     }
 
     createQuantumCore() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
 
         // Central quantum core with glow
         const coreGeometry = new THREE.IcosahedronGeometry(2, 2);
-        const coreMaterial = new THREE.MeshBasicMaterial({
-            color: colors.primary,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.8
-        });
+        const coreMaterial = theme === 'light'
+            ? new THREE.MeshPhongMaterial({
+                color: colors.primary,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.9,
+                emissive: colors.primary,
+                emissiveIntensity: 0.5
+            })
+            : new THREE.MeshBasicMaterial({
+                color: colors.primary,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.8
+            });
         this.core = new THREE.Mesh(coreGeometry, coreMaterial);
         this.scene.add(this.core);
 
         // Inner core
         const innerGeometry = new THREE.IcosahedronGeometry(1, 1);
-        const innerMaterial = new THREE.MeshBasicMaterial({
-            color: colors.secondary,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.6
-        });
+        const innerMaterial = theme === 'light'
+            ? new THREE.MeshPhongMaterial({
+                color: colors.secondary,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.8,
+                emissive: colors.secondary,
+                emissiveIntensity: 0.3
+            })
+            : new THREE.MeshBasicMaterial({
+                color: colors.secondary,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.6
+            });
         this.innerCore = new THREE.Mesh(innerGeometry, innerMaterial);
         this.scene.add(this.innerCore);
 
-        // Glowing sphere
+        // Glowing sphere - extra vibrant for light theme
         const glowGeometry = new THREE.SphereGeometry(0.5, 32, 32);
         const glowMaterial = new THREE.MeshBasicMaterial({
-            color: colors.primary,
+            color: theme === 'light' ? colors.highlight : colors.primary,
             transparent: true,
             opacity: colors.glowOpacity
         });
         this.glowSphere = new THREE.Mesh(glowGeometry, glowMaterial);
         this.scene.add(this.glowSphere);
+
+        // Add ambient light for light theme to make colors pop
+        if (theme === 'light' && !this.ambientLight) {
+            this.ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            this.scene.add(this.ambientLight);
+
+            // Add point lights for iridescent effects
+            const pointLight1 = new THREE.PointLight(colors.primary, 0.5, 100);
+            pointLight1.position.set(10, 10, 10);
+            this.scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(colors.secondary, 0.5, 100);
+            pointLight2.position.set(-10, -10, 10);
+            this.scene.add(pointLight2);
+        }
     }
 
     createParticles() {
         const colors = getThemeColors();
-        const particleCount = 500;
+        const theme = getCurrentTheme();
+        const particleCount = theme === 'light' ? 800 : 500; // More particles for light theme
         const positions = new Float32Array(particleCount * 3);
         const particleColors = new Float32Array(particleCount * 3);
         const sizes = new Float32Array(particleCount);
 
-        const colorPrimary = new THREE.Color(colors.primary);
-        const colorSecondary = new THREE.Color(colors.secondary);
+        if (theme === 'light' && colors.gradientColors) {
+            // Multi-color particle system for light theme
+            const gradColors = colors.gradientColors.map(c => new THREE.Color(c));
 
-        for (let i = 0; i < particleCount; i++) {
-            // Spherical distribution
-            const radius = 8 + Math.random() * 20;
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1);
+            for (let i = 0; i < particleCount; i++) {
+                // Spherical distribution with varied density
+                const radius = 8 + Math.random() * 20;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
 
-            positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-            positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-            positions[i * 3 + 2] = radius * Math.cos(phi);
+                positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i * 3 + 2] = radius * Math.cos(phi);
 
-            // Color interpolation
-            const mixRatio = Math.random();
-            const color = colorPrimary.clone().lerp(colorSecondary, mixRatio);
-            particleColors[i * 3] = color.r;
-            particleColors[i * 3 + 1] = color.g;
-            particleColors[i * 3 + 2] = color.b;
+                // Pick random color from gradient palette
+                const colorIndex = Math.floor(Math.random() * gradColors.length);
+                const nextColorIndex = (colorIndex + 1) % gradColors.length;
+                const mixRatio = Math.random();
 
-            sizes[i] = Math.random() * 2 + 0.5;
+                const color = gradColors[colorIndex].clone().lerp(gradColors[nextColorIndex], mixRatio);
+                particleColors[i * 3] = color.r;
+                particleColors[i * 3 + 1] = color.g;
+                particleColors[i * 3 + 2] = color.b;
 
-            // Store particle data for animation
-            this.particles.push({
-                index: i,
-                radius: radius,
-                theta: theta,
-                phi: phi,
-                speed: 0.001 + Math.random() * 0.002,
-                phaseOffset: Math.random() * Math.PI * 2
-            });
+                sizes[i] = Math.random() * 3 + 1; // Larger, varied sizes for light theme
+
+                // Store particle data for animation
+                this.particles.push({
+                    index: i,
+                    radius: radius,
+                    theta: theta,
+                    phi: phi,
+                    speed: 0.001 + Math.random() * 0.003,
+                    phaseOffset: Math.random() * Math.PI * 2,
+                    colorShift: Math.random() * Math.PI * 2 // For color animation
+                });
+            }
+        } else {
+            // Original dark theme particle system
+            const colorPrimary = new THREE.Color(colors.primary);
+            const colorSecondary = new THREE.Color(colors.secondary);
+
+            for (let i = 0; i < particleCount; i++) {
+                // Spherical distribution
+                const radius = 8 + Math.random() * 20;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+
+                positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i * 3 + 2] = radius * Math.cos(phi);
+
+                // Color interpolation
+                const mixRatio = Math.random();
+                const color = colorPrimary.clone().lerp(colorSecondary, mixRatio);
+                particleColors[i * 3] = color.r;
+                particleColors[i * 3 + 1] = color.g;
+                particleColors[i * 3 + 2] = color.b;
+
+                sizes[i] = Math.random() * 2 + 0.5;
+
+                // Store particle data for animation
+                this.particles.push({
+                    index: i,
+                    radius: radius,
+                    theta: theta,
+                    phi: phi,
+                    speed: 0.001 + Math.random() * 0.002,
+                    phaseOffset: Math.random() * Math.PI * 2
+                });
+            }
         }
 
         const geometry = new THREE.BufferGeometry();
@@ -216,32 +346,71 @@ class QuantumHeroScene {
 
     createOrbitalRings() {
         const colors = getThemeColors();
-        const ringCount = 3;
-        const ringColors = [colors.primary, colors.secondary, colors.highlight];
+        const theme = getCurrentTheme();
+        const ringCount = theme === 'light' ? 5 : 3; // More rings for light theme
 
-        for (let i = 0; i < ringCount; i++) {
-            const radius = 5 + i * 3;
-            const geometry = new THREE.TorusGeometry(radius, 0.02, 16, 100);
-            const material = new THREE.MeshBasicMaterial({
-                color: ringColors[i],
-                transparent: true,
-                opacity: 0.4
-            });
-            const ring = new THREE.Mesh(geometry, material);
+        if (theme === 'light' && colors.gradientColors) {
+            // Create rainbow orbital rings for light theme
+            for (let i = 0; i < ringCount; i++) {
+                const radius = 5 + i * 2.5;
+                const geometry = new THREE.TorusGeometry(radius, 0.05, 16, 100);
 
-            ring.rotation.x = Math.PI / 2 + (i * 0.3);
-            ring.rotation.y = i * 0.5;
+                // Use gradient colors for rings
+                const ringColor = colors.gradientColors[i % colors.gradientColors.length];
 
-            this.quantumOrbitals.push({
-                mesh: ring,
-                rotationSpeed: {
-                    x: 0.001 * (i + 1),
-                    y: 0.002 * (ringCount - i),
-                    z: 0.0015 * (i + 1)
-                }
-            });
+                const material = new THREE.MeshPhongMaterial({
+                    color: ringColor,
+                    emissive: ringColor,
+                    emissiveIntensity: 0.3,
+                    transparent: true,
+                    opacity: 0.8,
+                    shininess: 100
+                });
 
-            this.scene.add(ring);
+                const ring = new THREE.Mesh(geometry, material);
+
+                ring.rotation.x = Math.PI / 2 + (i * 0.25);
+                ring.rotation.y = i * 0.4;
+
+                this.quantumOrbitals.push({
+                    mesh: ring,
+                    rotationSpeed: {
+                        x: 0.002 * (i + 1),
+                        y: 0.003 * (ringCount - i),
+                        z: 0.0025 * (i + 1)
+                    }
+                });
+
+                this.scene.add(ring);
+            }
+        } else {
+            // Original dark theme rings
+            const ringColors = [colors.primary, colors.secondary, colors.highlight];
+
+            for (let i = 0; i < ringCount; i++) {
+                const radius = 5 + i * 3;
+                const geometry = new THREE.TorusGeometry(radius, 0.02, 16, 100);
+                const material = new THREE.MeshBasicMaterial({
+                    color: ringColors[i],
+                    transparent: true,
+                    opacity: 0.4
+                });
+                const ring = new THREE.Mesh(geometry, material);
+
+                ring.rotation.x = Math.PI / 2 + (i * 0.3);
+                ring.rotation.y = i * 0.5;
+
+                this.quantumOrbitals.push({
+                    mesh: ring,
+                    rotationSpeed: {
+                        x: 0.001 * (i + 1),
+                        y: 0.002 * (ringCount - i),
+                        z: 0.0015 * (i + 1)
+                    }
+                });
+
+                this.scene.add(ring);
+            }
         }
     }
 
@@ -410,15 +579,35 @@ class QuantumProcessorScene {
 
         // Update grid
         if (this.gridHelper) {
-            this.gridHelper.material.color.setHex(colors.primary);
+            if (theme === 'light') {
+                // Gradient-like grid for light theme
+                this.gridHelper.material.color.setHex(colors.tertiary || colors.primary);
+                this.gridHelper.material.opacity = 0.4;
+            } else {
+                this.gridHelper.material.color.setHex(colors.primary);
+                this.gridHelper.material.opacity = 0.3;
+            }
         }
 
-        // Update qubits
-        this.qubits.forEach(qubit => {
-            const qubitColor = Math.random() > 0.5 ? colors.primary : colors.secondary;
-            qubit.mesh.material.color.setHex(qubitColor);
-            qubit.ring.material.color.setHex(colors.primary);
-        });
+        // Update qubits with vibrant colors for light theme
+        if (theme === 'light' && colors.gradientColors) {
+            this.qubits.forEach((qubit, i) => {
+                const qubitColor = colors.gradientColors[i % colors.gradientColors.length];
+                qubit.mesh.material.color.setHex(qubitColor);
+                if (qubit.mesh.material.emissive) {
+                    qubit.mesh.material.emissive = new THREE.Color(qubitColor);
+                    qubit.mesh.material.emissiveIntensity = 0.4;
+                }
+                qubit.ring.material.color.setHex(qubitColor);
+                qubit.ring.material.opacity = 0.8;
+            });
+        } else {
+            this.qubits.forEach(qubit => {
+                const qubitColor = Math.random() > 0.5 ? colors.primary : colors.secondary;
+                qubit.mesh.material.color.setHex(qubitColor);
+                qubit.ring.material.color.setHex(colors.primary);
+            });
+        }
     }
 
     createQuantumGrid() {
@@ -437,28 +626,66 @@ class QuantumProcessorScene {
 
     createQubits() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
         const spacing = 3;
+        let qubitIndex = 0;
 
         for (let x = -2; x <= 2; x++) {
             for (let z = -2; z <= 2; z++) {
-                // Qubit sphere
-                const geometry = new THREE.SphereGeometry(0.3, 16, 16);
-                const material = new THREE.MeshBasicMaterial({
-                    color: Math.random() > 0.5 ? colors.primary : colors.secondary,
-                    transparent: true,
-                    opacity: 0.9
-                });
-                const qubit = new THREE.Mesh(geometry, material);
+                let material, ringMaterial;
+
+                if (theme === 'light' && colors.gradientColors) {
+                    // Use vibrant gradient colors for light theme
+                    const qubitColor = colors.gradientColors[qubitIndex % colors.gradientColors.length];
+
+                    // Qubit sphere with emissive glow
+                    const geometry = new THREE.SphereGeometry(0.4, 32, 32);
+                    material = new THREE.MeshPhongMaterial({
+                        color: qubitColor,
+                        emissive: qubitColor,
+                        emissiveIntensity: 0.4,
+                        transparent: true,
+                        opacity: 0.95,
+                        shininess: 200
+                    });
+
+                    // Glowing ring with matching color
+                    const ringGeometry = new THREE.TorusGeometry(0.6, 0.03, 16, 64);
+                    ringMaterial = new THREE.MeshPhongMaterial({
+                        color: qubitColor,
+                        emissive: qubitColor,
+                        emissiveIntensity: 0.3,
+                        transparent: true,
+                        opacity: 0.8
+                    });
+                } else {
+                    // Original dark theme materials
+                    const geometry = new THREE.SphereGeometry(0.3, 16, 16);
+                    material = new THREE.MeshBasicMaterial({
+                        color: Math.random() > 0.5 ? colors.primary : colors.secondary,
+                        transparent: true,
+                        opacity: 0.9
+                    });
+
+                    const ringGeometry = new THREE.TorusGeometry(0.5, 0.02, 8, 32);
+                    ringMaterial = new THREE.MeshBasicMaterial({
+                        color: colors.primary,
+                        transparent: true,
+                        opacity: 0.5
+                    });
+                }
+
+                const qubit = new THREE.Mesh(
+                    theme === 'light' ? new THREE.SphereGeometry(0.4, 32, 32) : new THREE.SphereGeometry(0.3, 16, 16),
+                    material
+                );
                 qubit.position.set(x * spacing, 0, z * spacing);
 
                 // Ring around qubit
-                const ringGeometry = new THREE.TorusGeometry(0.5, 0.02, 8, 32);
-                const ringMaterial = new THREE.MeshBasicMaterial({
-                    color: colors.primary,
-                    transparent: true,
-                    opacity: 0.5
-                });
-                const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+                const ring = new THREE.Mesh(
+                    theme === 'light' ? new THREE.TorusGeometry(0.6, 0.03, 16, 64) : new THREE.TorusGeometry(0.5, 0.02, 8, 32),
+                    ringMaterial
+                );
                 ring.rotation.x = Math.PI / 2;
                 qubit.add(ring);
 
@@ -471,7 +698,18 @@ class QuantumProcessorScene {
                 });
 
                 this.scene.add(qubit);
+                qubitIndex++;
             }
+        }
+
+        // Add lights for light theme
+        if (theme === 'light') {
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            this.scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4);
+            directionalLight.position.set(5, 10, 5);
+            this.scene.add(directionalLight);
         }
     }
 
@@ -578,19 +816,42 @@ class NeuralNetworkScene {
 
     updateColors() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
 
-        this.nodes.forEach(node => {
-            const nodeColor = node.layer === 0 || node.layer === 4 ? colors.primary : colors.secondary;
-            node.mesh.material.color.setHex(nodeColor);
-        });
+        if (theme === 'light' && colors.gradientColors) {
+            // Rainbow gradient for neural network nodes
+            this.nodes.forEach(node => {
+                const colorIndex = (node.layer + node.index) % colors.gradientColors.length;
+                const nodeColor = colors.gradientColors[colorIndex];
+                node.mesh.material.color.setHex(nodeColor);
+                if (node.mesh.material.emissive) {
+                    node.mesh.material.emissive = new THREE.Color(nodeColor);
+                    node.mesh.material.emissiveIntensity = 0.3;
+                }
+            });
 
-        this.connections.forEach(connection => {
-            connection.mesh.material.color.setHex(colors.primary);
-        });
+            // Colorful connections
+            this.connections.forEach((connection, i) => {
+                const connColor = colors.gradientColors[i % colors.gradientColors.length];
+                connection.mesh.material.color.setHex(connColor);
+                connection.mesh.material.opacity = 0.4;
+            });
+        } else {
+            // Original dark theme colors
+            this.nodes.forEach(node => {
+                const nodeColor = node.layer === 0 || node.layer === 4 ? colors.primary : colors.secondary;
+                node.mesh.material.color.setHex(nodeColor);
+            });
+
+            this.connections.forEach(connection => {
+                connection.mesh.material.color.setHex(colors.primary);
+            });
+        }
     }
 
     createNeuralNetwork() {
         const colors = getThemeColors();
+        const theme = getCurrentTheme();
         const layers = [4, 6, 8, 6, 4];
         const layerSpacing = 8;
         const nodeSpacing = 4;
@@ -601,13 +862,35 @@ class NeuralNetworkScene {
             for (let i = 0; i < nodeCount; i++) {
                 const nodeY = (i - (nodeCount - 1) / 2) * nodeSpacing;
 
-                const geometry = new THREE.SphereGeometry(0.4, 16, 16);
-                const material = new THREE.MeshBasicMaterial({
-                    color: layerIndex === 0 || layerIndex === layers.length - 1 ? colors.primary : colors.secondary,
-                    transparent: true,
-                    opacity: 0.8
-                });
-                const node = new THREE.Mesh(geometry, material);
+                let material;
+                if (theme === 'light' && colors.gradientColors) {
+                    // Vibrant gradient materials for light theme
+                    const colorIndex = (layerIndex + i) % colors.gradientColors.length;
+                    const nodeColor = colors.gradientColors[colorIndex];
+
+                    const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+                    material = new THREE.MeshPhongMaterial({
+                        color: nodeColor,
+                        emissive: nodeColor,
+                        emissiveIntensity: 0.3,
+                        transparent: true,
+                        opacity: 0.9,
+                        shininess: 150
+                    });
+                } else {
+                    // Original dark theme
+                    const geometry = new THREE.SphereGeometry(0.4, 16, 16);
+                    material = new THREE.MeshBasicMaterial({
+                        color: layerIndex === 0 || layerIndex === layers.length - 1 ? colors.primary : colors.secondary,
+                        transparent: true,
+                        opacity: 0.8
+                    });
+                }
+
+                const node = new THREE.Mesh(
+                    theme === 'light' ? new THREE.SphereGeometry(0.5, 32, 32) : new THREE.SphereGeometry(0.4, 16, 16),
+                    material
+                );
                 node.position.set(layerX, nodeY, 0);
 
                 this.nodes.push({
@@ -620,6 +903,16 @@ class NeuralNetworkScene {
                 this.scene.add(node);
             }
         });
+
+        // Add lighting for light theme
+        if (theme === 'light') {
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            this.scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 0.5);
+            pointLight.position.set(0, 0, 20);
+            this.scene.add(pointLight);
+        }
 
         // Create connections
         for (let l = 0; l < layers.length - 1; l++) {
